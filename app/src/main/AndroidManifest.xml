@@ -16,6 +16,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".AddMemberActivity"></activity>
+        <provider
+            android:authorities="com.example.android.clubolympuskt"
+            android:name=".data.OlympusContentProvider"
+            android:exported="false"/>
     </application>
 
 </manifest>
