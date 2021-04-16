@@ -6,7 +6,7 @@ import android.content.ContentValues
 import android.content.UriMatcher
 import android.database.Cursor
 import android.net.Uri
-import android.widget.Toast
+import android.util.Log
 import com.example.android.clubolympuskt.data.ClubOlympusContract.MemberEntry
 
 class OlympusContentProvider : ContentProvider() {
@@ -19,9 +19,9 @@ class OlympusContentProvider : ContentProvider() {
         private val sUriMatcher = UriMatcher(UriMatcher.NO_MATCH).apply {
             addURI(ClubOlympusContract.AUTHORITY, ClubOlympusContract.PATH_MEMBERS, MEMBERS)
             addURI(
-                ClubOlympusContract.AUTHORITY,
-                ClubOlympusContract.PATH_MEMBERS + "/#",
-                MEMBERS_ID
+                    ClubOlympusContract.AUTHORITY,
+                    ClubOlympusContract.PATH_MEMBERS + "/#",
+                    MEMBERS_ID
             )
         }
 
@@ -31,8 +31,8 @@ class OlympusContentProvider : ContentProvider() {
     }
 
     override fun query(
-        uri: Uri, projection: Array<out String>?, selection: String?,
-        selectionArgs: Array<out String>?, sortOrder: String?
+            uri: Uri, projection: Array<out String>?, selection: String?,
+            selectionArgs: Array<out String>?, sortOrder: String?
     ): Cursor? {
         val db = dbOpenHelper.readableDatabase
         val cursor: Cursor
@@ -42,41 +42,82 @@ class OlympusContentProvider : ContentProvider() {
 
         when (match) {
             MEMBERS -> cursor = db.query(
-                MemberEntry.TABLE_NAME, projection, selection,
-                selectionArgs, null, null, sortOrder
+                    MemberEntry.TABLE_NAME, projection, selection,
+                    selectionArgs, null, null, sortOrder
             )
             MEMBERS_ID -> {
                 localSelection = "${MemberEntry._ID} =?"
                 localSelectionArgs = arrayOf(ContentUris.parseId(uri).toString())
                 cursor = db.query(
-                    MemberEntry.TABLE_NAME, projection, selection,
-                    selectionArgs, null, null, sortOrder
+                        MemberEntry.TABLE_NAME, projection, selection,
+                        selectionArgs, null, null, sortOrder
                 )
             }
-            else -> {
-                Toast.makeText(context, "Incorrect URI", Toast.LENGTH_LONG).show()
-                throw IllegalArgumentException("Can't query incorrect URI $uri")
-            }
+            else -> throw IllegalArgumentException("Can't query incorrect URI $uri")
         }
         return cursor
     }
 
     override fun insert(uri: Uri, values: ContentValues?): Uri? {
-        TODO("Not yet implemented")
+        val db = dbOpenHelper.writableDatabase
+        val match: Int = sUriMatcher.match(uri)
+        var id : Long
+
+        return when (match) {
+            MEMBERS -> {
+                id = db.insert(MemberEntry.TABLE_NAME, null, values)
+                if (id.equals(-1)) {
+                    Log.e("insertMethod", "Insertion of data in the table failed for $uri")
+                    return null
+                }
+                ContentUris.withAppendedId(uri, id)
+            }
+            else -> throw IllegalArgumentException("Insertion of data in the table failed for $uri")
+        }
     }
 
     override fun delete(uri: Uri, selection: String?, selectionArgs: Array<out String>?): Int {
-        TODO("Not yet implemented")
+        val db = dbOpenHelper.writableDatabase
+        val match = sUriMatcher.match(uri)
+        var localSelection = selection ?: " "
+        var localSelectionArgs = selectionArgs ?: " "
+
+        return when (match) {
+            MEMBERS -> db.delete(MemberEntry.TABLE_NAME, selection, selectionArgs)
+            MEMBERS_ID -> {
+                localSelection = "${MemberEntry._ID} =?"
+                localSelectionArgs = arrayOf(ContentUris.parseId(uri).toString())
+                db.delete(MemberEntry.TABLE_NAME, localSelection, localSelectionArgs)
+            }
+            else -> throw IllegalArgumentException("Can't delete this URI $uri")
+        }
     }
 
     override fun update(
-        uri: Uri, values: ContentValues?, selection: String?,
-        selectionArgs: Array<out String>?
+            uri: Uri, values: ContentValues?, selection: String?,
+            selectionArgs: Array<out String>?
     ): Int {
-        TODO("Not yet implemented")
+        val db = dbOpenHelper.writableDatabase
+        val match = sUriMatcher.match(uri)
+        var localSelection = selection ?: " "
+        var localSelectionArgs = selectionArgs ?: " "
+
+        return when (match) {
+            MEMBERS -> db.update(MemberEntry.TABLE_NAME, values, selection, selectionArgs)
+            MEMBERS_ID -> {
+                localSelection = "${MemberEntry._ID} =?"
+                localSelectionArgs = arrayOf(ContentUris.parseId(uri).toString())
+                db.update(MemberEntry.TABLE_NAME, values, localSelection, localSelectionArgs)
+            }
+            else -> throw IllegalArgumentException("Can't update this URI $uri")
+        }
     }
 
-    override fun getType(uri: Uri): String? {
-        TODO("Not yet implemented")
-    }
+    override fun getType(uri: Uri): String? =
+        when (sUriMatcher.match(uri)) {
+            MEMBERS -> MemberEntry.CONTENT_MULTIPLE_ITEMS
+            MEMBERS_ID -> MemberEntry.CONTENT_SINGLE_ITEM
+            else -> throw IllegalArgumentException("Unknown URI: $uri")
+        }
+
 }
