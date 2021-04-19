@@ -38,9 +38,9 @@ class AddMemberActivity : AppCompatActivity() {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 var selectedGender = parent!!.getItemAtPosition(position)
                 when (selectedGender) {
-                    "Male" -> gender = 1
-                    "Female" -> gender = 2
-                    else -> gender = 0
+                    "Male" -> gender = MemberEntry.GENDER_MALE
+                    "Female" -> gender = MemberEntry.GENDER_FEMALE
+                    else -> gender = MemberEntry.GENDER_UNKNOWN
                 }
             }
 

@@ -59,9 +59,19 @@ class OlympusContentProvider : ContentProvider() {
     }
 
     override fun insert(uri: Uri, values: ContentValues?): Uri? {
+
+        values?.getAsString(MemberEntry.COLUMN_FIRST_NAME)
+                ?: throw java.lang.IllegalArgumentException("You have to input first name")
+        values.getAsString(MemberEntry.COLUMN_LAST_NAME)
+                ?: throw java.lang.IllegalArgumentException("You have to input last name")
+        values.getAsString(MemberEntry.COLUMN_GENDER)
+                ?: throw java.lang.IllegalArgumentException("You have to input gender")
+        values.getAsString(MemberEntry.COLUMN_SPORT)
+                ?: throw java.lang.IllegalArgumentException("You have to input sport")
+
         val db = dbOpenHelper.writableDatabase
         val match: Int = sUriMatcher.match(uri)
-        var id : Long
+        val id : Long
 
         return when (match) {
             MEMBERS -> {
