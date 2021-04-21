@@ -11,19 +11,19 @@ import com.example.android.clubolympuskt.data.ClubOlympusContract.MemberEntry
 
 class OlympusContentProvider : ContentProvider() {
 
-    lateinit var dbOpenHelper : OlympusDbOpenHelper
+    lateinit var dbOpenHelper: OlympusDbOpenHelper
 
     private val MEMBERS = 111
     private val MEMBERS_ID = 222
 
-        private val sUriMatcher = UriMatcher(UriMatcher.NO_MATCH).apply {
-            addURI(ClubOlympusContract.AUTHORITY, ClubOlympusContract.PATH_MEMBERS, MEMBERS)
-            addURI(
-                    ClubOlympusContract.AUTHORITY,
-                    ClubOlympusContract.PATH_MEMBERS + "/#",
-                    MEMBERS_ID
-            )
-        }
+    private val sUriMatcher = UriMatcher(UriMatcher.NO_MATCH).apply {
+        addURI(ClubOlympusContract.AUTHORITY, ClubOlympusContract.PATH_MEMBERS, MEMBERS)
+        addURI(
+                ClubOlympusContract.AUTHORITY,
+                ClubOlympusContract.PATH_MEMBERS + "/#",
+                MEMBERS_ID
+        )
+    }
 
     override fun onCreate(): Boolean {
         dbOpenHelper = OlympusDbOpenHelper(context)
@@ -55,6 +55,7 @@ class OlympusContentProvider : ContentProvider() {
             }
             else -> throw IllegalArgumentException("Can't query incorrect URI $uri")
         }
+        cursor.setNotificationUri(context!!.contentResolver, uri)
         return cursor
     }
 
@@ -71,7 +72,7 @@ class OlympusContentProvider : ContentProvider() {
 
         val db = dbOpenHelper.writableDatabase
         val match: Int = sUriMatcher.match(uri)
-        val id : Long
+        val id: Long
 
         return when (match) {
             MEMBERS -> {
@@ -80,6 +81,8 @@ class OlympusContentProvider : ContentProvider() {
                     Log.e("insertMethod", "Insertion of data in the table failed for $uri")
                     return null
                 }
+
+                context!!.contentResolver.notifyChange(uri, null)
                 ContentUris.withAppendedId(uri, id)
             }
             else -> throw IllegalArgumentException("Insertion of data in the table failed for $uri")
@@ -91,13 +94,24 @@ class OlympusContentProvider : ContentProvider() {
         val match = sUriMatcher.match(uri)
         var localSelection = selection ?: " "
         var localSelectionArgs = selectionArgs ?: " "
+        val rowsDeleted: Int
 
         return when (match) {
-            MEMBERS -> db.delete(MemberEntry.TABLE_NAME, selection, selectionArgs)
+            MEMBERS -> {
+                rowsDeleted = db.delete(MemberEntry.TABLE_NAME, selection, selectionArgs)
+                if (rowsDeleted != 0) {
+                    context!!.contentResolver.notifyChange(uri, null)
+                }
+                return rowsDeleted
+            }
             MEMBERS_ID -> {
                 localSelection = "${MemberEntry._ID} =?"
                 localSelectionArgs = arrayOf(ContentUris.parseId(uri).toString())
-                db.delete(MemberEntry.TABLE_NAME, localSelection, localSelectionArgs)
+                rowsDeleted = db.delete(MemberEntry.TABLE_NAME, localSelection, localSelectionArgs)
+                if (rowsDeleted != 0) {
+                    context!!.contentResolver.notifyChange(uri, null)
+                }
+                return rowsDeleted
             }
             else -> throw IllegalArgumentException("Can't delete this URI $uri")
         }
@@ -111,23 +125,35 @@ class OlympusContentProvider : ContentProvider() {
         val match = sUriMatcher.match(uri)
         var localSelection = selection ?: " "
         var localSelectionArgs = selectionArgs ?: " "
+        val rowsUpdated: Int
 
         return when (match) {
-            MEMBERS -> db.update(MemberEntry.TABLE_NAME, values, selection, selectionArgs)
+            MEMBERS -> {
+                rowsUpdated = db.update(MemberEntry.TABLE_NAME, values, selection, selectionArgs)
+                if (rowsUpdated != 0) {
+                    context!!.contentResolver.notifyChange(uri, null)
+                }
+                return rowsUpdated
+            }
+
             MEMBERS_ID -> {
                 localSelection = "${MemberEntry._ID} =?"
                 localSelectionArgs = arrayOf(ContentUris.parseId(uri).toString())
-                db.update(MemberEntry.TABLE_NAME, values, localSelection, localSelectionArgs)
+                rowsUpdated = db.update(MemberEntry.TABLE_NAME, values, selection, selectionArgs)
+                if (rowsUpdated != 0) {
+                    context!!.contentResolver.notifyChange(uri, null)
+                }
+                return rowsUpdated
             }
             else -> throw IllegalArgumentException("Can't update this URI $uri")
         }
     }
 
     override fun getType(uri: Uri): String? =
-        when (sUriMatcher.match(uri)) {
-            MEMBERS -> MemberEntry.CONTENT_MULTIPLE_ITEMS
-            MEMBERS_ID -> MemberEntry.CONTENT_SINGLE_ITEM
-            else -> throw IllegalArgumentException("Unknown URI: $uri")
-        }
+            when (sUriMatcher.match(uri)) {
+                MEMBERS -> MemberEntry.CONTENT_MULTIPLE_ITEMS
+                MEMBERS_ID -> MemberEntry.CONTENT_SINGLE_ITEM
+                else -> throw IllegalArgumentException("Unknown URI: $uri")
+            }
 
 }
