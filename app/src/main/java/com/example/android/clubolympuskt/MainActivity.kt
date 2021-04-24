@@ -4,14 +4,13 @@ import android.content.ContentUris
 import android.content.Intent
 import android.database.Cursor
 import android.os.Bundle
-import android.view.View
 import android.widget.AdapterView
 import android.widget.ListView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.loader.app.LoaderManager
 import androidx.loader.content.CursorLoader
 import androidx.loader.content.Loader
-import com.example.android.clubolympuskt.data.ClubOlympusContract.MemberEntry
+import com.example.android.clubolympuskt.data.*
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Cursor> {
@@ -39,7 +38,7 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Cursor> 
         dataListView.adapter = memberCursorAdapter
         dataListView.onItemClickListener = AdapterView.OnItemClickListener { parent, view, position, id ->
             intent = Intent(this@MainActivity, AddMemberActivity::class.java)
-            val currentMemberUri = ContentUris.withAppendedId(MemberEntry.CONTENT_URI, id)
+            val currentMemberUri = ContentUris.withAppendedId(CONTENT_URI, id)
             intent.data = currentMemberUri
             startActivity(intent)
         }
@@ -50,13 +49,13 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Cursor> 
 
     override fun onCreateLoader(id: Int, args: Bundle?): Loader<Cursor> {
         val projection = arrayOf(
-                MemberEntry._ID,
-                MemberEntry.COLUMN_FIRST_NAME,
-                MemberEntry.COLUMN_LAST_NAME,
-                MemberEntry.COLUMN_SPORT
+                _ID,
+                COLUMN_FIRST_NAME,
+                COLUMN_LAST_NAME,
+                COLUMN_SPORT
         )
         return CursorLoader(this,
-                MemberEntry.CONTENT_URI, projection,
+                CONTENT_URI, projection,
                 null, null, null
         )
     }

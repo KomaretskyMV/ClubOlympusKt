@@ -7,7 +7,6 @@ import android.content.UriMatcher
 import android.database.Cursor
 import android.net.Uri
 import android.util.Log
-import com.example.android.clubolympuskt.data.ClubOlympusContract.MemberEntry
 
 class OlympusContentProvider : ContentProvider() {
 
@@ -17,10 +16,10 @@ class OlympusContentProvider : ContentProvider() {
     private val MEMBERS_ID = 222
 
     private val sUriMatcher = UriMatcher(UriMatcher.NO_MATCH).apply {
-        addURI(ClubOlympusContract.AUTHORITY, ClubOlympusContract.PATH_MEMBERS, MEMBERS)
+        addURI(AUTHORITY, PATH_MEMBERS, MEMBERS)
         addURI(
-                ClubOlympusContract.AUTHORITY,
-                ClubOlympusContract.PATH_MEMBERS + "/#",
+                AUTHORITY,
+                PATH_MEMBERS + "/#",
                 MEMBERS_ID
         )
     }
@@ -42,14 +41,14 @@ class OlympusContentProvider : ContentProvider() {
 
         when (match) {
             MEMBERS -> cursor = db.query(
-                    MemberEntry.TABLE_NAME, projection, selection,
+                    TABLE_NAME, projection, selection,
                     selectionArgs, null, null, sortOrder
             )
             MEMBERS_ID -> {
-                localSelection = "${MemberEntry._ID} =?"
+                localSelection = "${_ID} =?"
                 localSelectionArgs = arrayOf(ContentUris.parseId(uri).toString())
                 cursor = db.query(
-                        MemberEntry.TABLE_NAME, projection, selection,
+                        TABLE_NAME, projection, selection,
                         selectionArgs, null, null, sortOrder
                 )
             }
@@ -61,13 +60,13 @@ class OlympusContentProvider : ContentProvider() {
 
     override fun insert(uri: Uri, values: ContentValues?): Uri? {
 
-        values?.getAsString(MemberEntry.COLUMN_FIRST_NAME)
+        values?.getAsString(COLUMN_FIRST_NAME)
                 ?: throw java.lang.IllegalArgumentException("You have to input first name")
-        values.getAsString(MemberEntry.COLUMN_LAST_NAME)
+        values.getAsString(COLUMN_LAST_NAME)
                 ?: throw java.lang.IllegalArgumentException("You have to input last name")
-        values.getAsString(MemberEntry.COLUMN_GENDER)
+        values.getAsString(COLUMN_GENDER)
                 ?: throw java.lang.IllegalArgumentException("You have to input gender")
-        values.getAsString(MemberEntry.COLUMN_SPORT)
+        values.getAsString(COLUMN_SPORT)
                 ?: throw java.lang.IllegalArgumentException("You have to input sport")
 
         val db = dbOpenHelper.writableDatabase
@@ -76,7 +75,7 @@ class OlympusContentProvider : ContentProvider() {
 
         return when (match) {
             MEMBERS -> {
-                id = db.insert(MemberEntry.TABLE_NAME, null, values)
+                id = db.insert(TABLE_NAME, null, values)
                 if (id.equals(-1)) {
                     Log.e("insertMethod", "Insertion of data in the table failed for $uri")
                     return null
@@ -98,16 +97,16 @@ class OlympusContentProvider : ContentProvider() {
 
         return when (match) {
             MEMBERS -> {
-                rowsDeleted = db.delete(MemberEntry.TABLE_NAME, selection, selectionArgs)
+                rowsDeleted = db.delete(TABLE_NAME, selection, selectionArgs)
                 if (rowsDeleted != 0) {
                     context!!.contentResolver.notifyChange(uri, null)
                 }
                 return rowsDeleted
             }
             MEMBERS_ID -> {
-                localSelection = "${MemberEntry._ID} =?"
+                localSelection = "${_ID} =?"
                 localSelectionArgs = arrayOf(ContentUris.parseId(uri).toString())
-                rowsDeleted = db.delete(MemberEntry.TABLE_NAME, localSelection, localSelectionArgs)
+                rowsDeleted = db.delete(TABLE_NAME, localSelection, localSelectionArgs)
                 if (rowsDeleted != 0) {
                     context!!.contentResolver.notifyChange(uri, null)
                 }
@@ -129,7 +128,7 @@ class OlympusContentProvider : ContentProvider() {
 
         return when (match) {
             MEMBERS -> {
-                rowsUpdated = db.update(MemberEntry.TABLE_NAME, values, selection, selectionArgs)
+                rowsUpdated = db.update(TABLE_NAME, values, selection, selectionArgs)
                 if (rowsUpdated != 0) {
                     context!!.contentResolver.notifyChange(uri, null)
                 }
@@ -137,9 +136,9 @@ class OlympusContentProvider : ContentProvider() {
             }
 
             MEMBERS_ID -> {
-                localSelection = "${MemberEntry._ID} =?"
+                localSelection = "${_ID} =?"
                 localSelectionArgs = arrayOf(ContentUris.parseId(uri).toString())
-                rowsUpdated = db.update(MemberEntry.TABLE_NAME, values, selection, selectionArgs)
+                rowsUpdated = db.update(TABLE_NAME, values, selection, selectionArgs)
                 if (rowsUpdated != 0) {
                     context!!.contentResolver.notifyChange(uri, null)
                 }
@@ -151,8 +150,8 @@ class OlympusContentProvider : ContentProvider() {
 
     override fun getType(uri: Uri): String? =
             when (sUriMatcher.match(uri)) {
-                MEMBERS -> MemberEntry.CONTENT_MULTIPLE_ITEMS
-                MEMBERS_ID -> MemberEntry.CONTENT_SINGLE_ITEM
+                MEMBERS -> CONTENT_MULTIPLE_ITEMS
+                MEMBERS_ID -> CONTENT_SINGLE_ITEM
                 else -> throw IllegalArgumentException("Unknown URI: $uri")
             }
 

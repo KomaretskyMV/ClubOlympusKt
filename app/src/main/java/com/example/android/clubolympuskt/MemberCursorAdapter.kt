@@ -7,8 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.CursorAdapter
 import android.widget.TextView
+import com.example.android.clubolympuskt.data.*
 
-import com.example.android.clubolympuskt.data.ClubOlympusContract.MemberEntry
 
 class MemberCursorAdapter(context: Context?, cursor: Cursor?, autoRequery: Boolean) :
         CursorAdapter(context, cursor, autoRequery) {
@@ -21,9 +21,9 @@ class MemberCursorAdapter(context: Context?, cursor: Cursor?, autoRequery: Boole
         val lastNameTextView = view.findViewById<TextView>(R.id.lastNameTextText)
         val sportTextView = view.findViewById<TextView>(R.id.sportTextView)
 
-        val firstName = cursor!!.getString(cursor.getColumnIndexOrThrow(MemberEntry.COLUMN_FIRST_NAME))
-        val lastName = cursor!!.getString(cursor.getColumnIndexOrThrow(MemberEntry.COLUMN_LAST_NAME))
-        val sport = cursor!!.getString(cursor.getColumnIndexOrThrow(MemberEntry.COLUMN_SPORT))
+        val firstName = cursor!!.getString(cursor.getColumnIndexOrThrow(COLUMN_FIRST_NAME))
+        val lastName = cursor!!.getString(cursor.getColumnIndexOrThrow(COLUMN_LAST_NAME))
+        val sport = cursor!!.getString(cursor.getColumnIndexOrThrow(COLUMN_SPORT))
 
         firstNameTextView.text = firstName
         lastNameTextView.text = lastName

@@ -16,7 +16,7 @@ import androidx.core.app.NavUtils
 import androidx.loader.app.LoaderManager
 import androidx.loader.content.CursorLoader
 import androidx.loader.content.Loader
-import com.example.android.clubolympuskt.data.ClubOlympusContract.MemberEntry
+import com.example.android.clubolympuskt.data.*
 
 class AddMemberActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Cursor> {
     private lateinit var firstNameEditText: EditText
@@ -62,9 +62,9 @@ class AddMemberActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Cur
         genderSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) =
                     when (parent!!.getItemAtPosition(position)) {
-                        "Male" -> gender = MemberEntry.GENDER_MALE
-                        "Female" -> gender = MemberEntry.GENDER_FEMALE
-                        else -> gender = MemberEntry.GENDER_UNKNOWN
+                        "Male" -> gender = GENDER_MALE
+                        "Female" -> gender = GENDER_FEMALE
+                        else -> gender = GENDER_UNKNOWN
                     }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
@@ -117,7 +117,7 @@ class AddMemberActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Cur
         } else if (TextUtils.isEmpty(lastName)) {
             Toast.makeText(this, "Input the last name", Toast.LENGTH_LONG).show()
             return
-        } else if (gender == MemberEntry.GENDER_UNKNOWN) {
+        } else if (gender == GENDER_UNKNOWN) {
             Toast.makeText(this, "Choose the gender", Toast.LENGTH_LONG).show()
             return
         } else if (TextUtils.isEmpty(sport)) {
@@ -126,14 +126,14 @@ class AddMemberActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Cur
         }
 
         val contentValues = ContentValues()
-        contentValues.put(MemberEntry.COLUMN_FIRST_NAME, firstName)
-        contentValues.put(MemberEntry.COLUMN_LAST_NAME, lastName)
-        contentValues.put(MemberEntry.COLUMN_SPORT, sport)
-        contentValues.put(MemberEntry.COLUMN_GENDER, gender)
+        contentValues.put(COLUMN_FIRST_NAME, firstName)
+        contentValues.put(COLUMN_LAST_NAME, lastName)
+        contentValues.put(COLUMN_SPORT, sport)
+        contentValues.put(COLUMN_GENDER, gender)
 
         if (currentMemberUri == null) {
             val contentResolver = contentResolver
-            val uri = contentResolver.insert(MemberEntry.CONTENT_URI, contentValues)
+            val uri = contentResolver.insert(CONTENT_URI, contentValues)
 
             if (uri == null) {
                 Toast.makeText(this, "Insertion of data in the table failed", Toast.LENGTH_LONG).show()
@@ -152,11 +152,11 @@ class AddMemberActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Cur
     }
 
     override fun onCreateLoader(id: Int, args: Bundle?): Loader<Cursor> {
-        val projection = arrayOf(MemberEntry._ID,
-                MemberEntry.COLUMN_FIRST_NAME,
-                MemberEntry.COLUMN_LAST_NAME,
-                MemberEntry.COLUMN_GENDER,
-                MemberEntry.COLUMN_SPORT)
+        val projection = arrayOf(_ID,
+                COLUMN_FIRST_NAME,
+                COLUMN_LAST_NAME,
+                COLUMN_GENDER,
+                COLUMN_SPORT)
         return CursorLoader(this,
                 currentMemberUri!!,
                 projection,
@@ -167,10 +167,10 @@ class AddMemberActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Cur
 
     override fun onLoadFinished(loader: Loader<Cursor>, data: Cursor?) {
         if (data!!.moveToFirst()) {
-            val firstNameColumnIndex = data.getColumnIndex(MemberEntry.COLUMN_FIRST_NAME)
-            val lastNameColumnIndex = data.getColumnIndex(MemberEntry.COLUMN_LAST_NAME)
-            val genderColumnIndex = data.getColumnIndex(MemberEntry.COLUMN_GENDER)
-            val sportColumnIndex = data.getColumnIndex(MemberEntry.COLUMN_SPORT)
+            val firstNameColumnIndex = data.getColumnIndex(COLUMN_FIRST_NAME)
+            val lastNameColumnIndex = data.getColumnIndex(COLUMN_LAST_NAME)
+            val genderColumnIndex = data.getColumnIndex(COLUMN_GENDER)
+            val sportColumnIndex = data.getColumnIndex(COLUMN_SPORT)
 
             val firstName = data.getString(firstNameColumnIndex)
             val lastName = data.getString(lastNameColumnIndex)
@@ -182,9 +182,9 @@ class AddMemberActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<Cur
             sportEditText.setText(sport)
 
             when (gender) {
-                MemberEntry.GENDER_MALE -> genderSpinner.setSelection(1)
-                MemberEntry.GENDER_FEMALE -> genderSpinner.setSelection(2)
-                MemberEntry.GENDER_UNKNOWN -> genderSpinner.setSelection(0)
+                GENDER_MALE -> genderSpinner.setSelection(1)
+                GENDER_FEMALE -> genderSpinner.setSelection(2)
+                GENDER_UNKNOWN -> genderSpinner.setSelection(0)
             }
         }
     }
